@@ -16,8 +16,13 @@ nx = 31
 ny = 23
 textSize = 0.2  #0.05  #0.3
 
+s2 = 60
+# picture size: 640x480
+nx2 = 10
+ny2 = 8
+
 black = (0,0,0)
-dBlack = 250  #400
+dBlack = 200  #400
 
 redRGB = (255,0,0)
 greenRGB = (0,255,0)
@@ -108,7 +113,7 @@ diff = (colorTolerance,colorTolerance,colorTolerance)
 # display(pil_msk)
 
 
-def show_webcam(mirror=False, colorList=[]):
+def show_webcam(mirror=False, colorList=[], colorList2=[]):
     cam = cv2.VideoCapture(0)
     while True:
         ret_val, img = cam.read()
@@ -124,7 +129,14 @@ def show_webcam(mirror=False, colorList=[]):
         mask = zeros((h+2,w+2), uint8)
         maskbk = mask.copy()
 
-        # loop fill grid
+        # loop fill grid - less dense
+        for j in range(ny2):
+            for i in range(nx2):
+                dColor = linalg.norm(imbk[s2*j][s2*i]-black)
+                if dColor > dBlack:
+                    cv2.floodFill(im,mask,(s2*i,s2*j),FixedRandomColor(colorList2,i,j,nx2,ny2),diff,diff,4 | ( 255 << 8 ))
+
+        # loop fill grid - more dense
         for j in range(ny):
             for i in range(nx):
                 #print(f'imbk[s*j][s*i] = {imbk[s*j][s*i]}')
@@ -137,7 +149,7 @@ def show_webcam(mirror=False, colorList=[]):
                     #mask = maskbk.copy()
                     cv2.floodFill(im,mask,(s*i,s*j),FixedRandomColor(colorList,i,j,nx,ny),diff,diff,4 | ( 255 << 8 ))
 
-
+        # display
         cv2.imshow('my webcam', im)
         if cv2.waitKey(1) == 27: 
             break  # esc to quit
@@ -146,8 +158,9 @@ def show_webcam(mirror=False, colorList=[]):
 
 def main():
     colorList = InitFixedRandomColor(nx,ny)
+    colorList2 = InitFixedRandomColor(nx2,ny2)
     #print(colorList)
-    show_webcam(mirror=True, colorList=colorList)
+    show_webcam(mirror=True, colorList=colorList, colorList2=colorList2)
 
 
 if __name__ == '__main__':
