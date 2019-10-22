@@ -41,6 +41,7 @@ blueBGR = (255,0,0)
 
 # fps
 timeLastFrame = 0
+timeThisFrame = 0
 
 
 # random color function
@@ -82,15 +83,17 @@ def InitSampleColor(nx,ny):
     return colorList
 
 # FPS
-def diplay_fps(tLast,img):
-    tThis = time.time()
-    deltaTime = (tThis - tLast)/1000
+def diplay_fps(img):
+    global timeThisFrame
+    global timeLastFrame
+    timeThisFrame = time.time()
+    deltaTime = timeThisFrame - timeLastFrame
     fps = round(1/deltaTime*10)/10
     cv2.putText(img, f'{fps}', (10,10), cv2.FONT_HERSHEY_SIMPLEX, textSize, whiteRGB)
-    return tThis
+    timeLastFrame = timeThisFrame
 
 # floodfill webcam
-def floodfill_webcam(mirror, colorList, colorList2, tLast):
+def floodfill_webcam(mirror, colorList, colorList2):
     cam = cv2.VideoCapture(0)
     while True:
         ret_val, img = cam.read()
@@ -111,7 +114,7 @@ def floodfill_webcam(mirror, colorList, colorList2, tLast):
             for i in range(nx2):
                 dColor = linalg.norm(imbk[s2*j][s2*i]-black)
                 if dColor > dBlack:
-                    cv2.floodFill(im,mask,(s2*i,s2*j),FixedRandomColor(colorList2,i,j,nx2,ny2),diff,diff,4 | ( 255 << 8 ))
+                    cv2.floodFill(im,mask,(int(s2*i+s2/2),int(s2*j+s2/2)),FixedRandomColor(colorList2,i,j,nx2,ny2),diff,diff,4 | ( 255 << 8 ))
 
         # loop fill grid - more dense
         for j in range(ny):
@@ -135,7 +138,7 @@ def floodfill_webcam(mirror, colorList, colorList2, tLast):
                     cv2.circle(im, (int(s2*i+s2/2),int(s2*j+s2/2)), 3, colorList2[t], 5)
 
         # fps
-        timeLastFrame = diplay_fps(tLast,im)
+        diplay_fps(im)
 
         # display
         cv2.imshow('my webcam', im)
@@ -143,7 +146,7 @@ def floodfill_webcam(mirror, colorList, colorList2, tLast):
             break  # esc to quit
 
         # fps control
-        time.sleep(0.1)
+        #time.sleep(0.1)
 
     cv2.destroyAllWindows()
 
@@ -157,7 +160,7 @@ def main():
     colorListSample2 = InitSampleColor(nx2,ny2)  # for less dense grid
     #print(colorList2)
     # runtime function
-    floodfill_webcam(True, colorListSample, colorListSample2, timeLastFrame)
+    floodfill_webcam(True, colorListSample, colorListSample2)
 
 
 if __name__ == '__main__':
