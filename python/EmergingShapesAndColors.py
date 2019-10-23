@@ -103,7 +103,6 @@ def floodfill_webcam(mirror, colorList, colorList2):
         # post processing of each webcam fram
         im = img.copy()
         imbk = im.copy()
-        #print(im)
         h,w = im.shape[:2]
 
         mask = zeros((h+2,w+2), uint8)
@@ -119,14 +118,8 @@ def floodfill_webcam(mirror, colorList, colorList2):
         # loop fill grid - more dense
         for j in range(ny):
             for i in range(nx):
-                #print(f'imbk[s*j][s*i] = {imbk[s*j][s*i]}')
-                #print(f'black = {black}')
                 dColor = linalg.norm(imbk[s*j][s*i]-black)
                 if dColor > dBlack:
-                    #print(f's*i = {s*i}; s*j = {s*j}')
-                    #print(f'dColor = {dColor}')
-                    # reset mask; will be very slow 16+ sec
-                    #mask = maskbk.copy()
                     cv2.floodFill(im,mask,(s*i,s*j),FixedRandomColor(colorList,i,j,nx,ny),diff,diff,4 | ( 255 << 8 ))
 
         # show color palette
@@ -134,7 +127,6 @@ def floodfill_webcam(mirror, colorList, colorList2):
             for i in range(nx2):
                 t = ny2*j+i
                 if t < len(colorList2):
-                    #print(colorList2[t])
                     cv2.circle(im, (int(s2*i+s2/2),int(s2*j+s2/2)), 3, colorList2[t], 5)
 
         # fps
@@ -150,18 +142,20 @@ def floodfill_webcam(mirror, colorList, colorList2):
 
     cv2.destroyAllWindows()
 
+
 # main function
 def main():
     # fps
     timeLastFrame = time.time()
+    # color list
     colorListRandom = InitFixedRandomColor(nx,ny)  # for more dense grid
     colorListRandom2 = InitFixedRandomColor(nx2,ny2)  # for less dense grid
     colorListSample = InitSampleColor(nx,ny)  # for more dense grid
     colorListSample2 = InitSampleColor(nx2,ny2)  # for less dense grid
-    #print(colorList2)
     # runtime function
     floodfill_webcam(True, colorListSample, colorListSample2)
 
 
+# initiation
 if __name__ == '__main__':
     main()
